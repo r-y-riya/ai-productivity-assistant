@@ -1,0 +1,7 @@
+openai==1.64.0
+streamlit==1.42.2
+requests==2.32.3
+numpy==2.2.3
+pandas==2.2.3
+python-dotenv==0.21.0
+streamlit-calendar==0.2.0
