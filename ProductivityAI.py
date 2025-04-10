@@ -348,9 +348,7 @@ def main():
             else:
                 st.info("No completed tasks yet")
 
-    # Schedule Generator
-st.header("⏳ Schedule Generator")
-
+   
 
 if __name__ == "__main__":
     main()
