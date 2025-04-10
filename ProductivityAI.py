@@ -1,3 +1,5 @@
+
+
 import openai
 import json
 import os
@@ -11,6 +13,81 @@ from datetime import datetime,timedelta
 from dotenv import load_dotenv
 
 st.set_page_config(page_title="AI Productivity Assistant", layout="wide")
+
+st.markdown("""
+    <style>
+    /* Global App Background and Font */
+    body, .stApp {
+        background-color: #ffffff;
+        color: #003366;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    /* Sidebar */
+    .css-1d391kg {  /* Sidebar header */
+        background-color: #e6f0ff !important;
+        color: #003366 !important;
+    }
+
+    /* Task blocks */
+    .task-block {
+        background-color: #f0f8ff;
+        border-left: 4px solid #0077cc;
+        padding: 10px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+    }
+
+    /* Completed task style */
+    .completed-task {
+        opacity: 0.75;
+        padding: 10px;
+        border-left: 4px solid #009688;
+        background-color: #e0f7fa;
+        margin: 5px 0;
+        border-radius: 4px;
+    }
+
+    /* Buttons and Sliders */
+    .stButton>button {
+        background-color: #0077cc;
+        color: white;
+        border-radius: 6px;
+    }
+    .stButton>button:hover {
+        background-color: #005fa3;
+    }
+       /* Sidebar Header */
+    .css-1d391kg {
+        color: white !important;
+    }       
+            
+
+    /* Expander Header */
+    .streamlit-expanderHeader {
+        font-weight: bold;
+        color: #005fa3;
+    }
+
+    /* Tabs */
+    .stTabs [data-baseweb="tab"] {
+        background-color: #e6f0ff;
+        color: #003366;
+    }
+            
+
+    /* Markdown Headers */
+    h1, h2, h3 {
+        color: #005fa3;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+
+
+
+
+
 
 load_dotenv()  # Load .env file
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -158,6 +235,23 @@ def main():
         st.session_state.assistant = ProductivityAssistant()  # Initialize it here
 
     st.title("🎓 AI Productivity Assistant")
+    st.markdown("""
+    <style>
+    .white-label {
+        color: white !important;
+    }
+                
+    <style>
+    /* Force the "Add Task" button text to be white */
+    button[kind="formSubmit"] {
+        color: white !important;
+    }
+    .st-emotion-cache-1n76uvr { /* Sidebar header class */
+        color: white !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 
 
     if not hasattr(st.session_state, "assistant"):
@@ -166,14 +260,16 @@ def main():
     
     # Sidebar - Task Creation
     with st.sidebar:
-        st.header("➕ New Task")
-        with st.form("task_form", clear_on_submit=True):
-            name = st.text_input("Task Name")
-            due_date = st.date_input("Due Date")
-            duration = st.number_input("Hours Needed", min_value=0.5, step=0.5)
-            category = st.selectbox("Category", ["Study", "Work", "Personal"])
-            submitted = st.form_submit_button("Add Task")
-            
+        
+        with st.sidebar:
+            st.markdown('<h2 class="white-label">➕ New Task</h2>', unsafe_allow_html=True)
+            with st.form("task_form", clear_on_submit=True):
+                name = st.text_input("Task Name")
+                due_date = st.date_input("Due Date")
+                duration = st.number_input("Hours Needed", min_value=0.5, step=0.5)
+                category = st.selectbox("Category", ["Study", "Work", "Personal"])
+                submitted = st.form_submit_button("Add Task")
+                    
             if submitted:
                 new_task = Task(
                     name=name.strip(),
@@ -205,7 +301,12 @@ def main():
                     - 🚦 Status: {task.status}
                     """)
         else:
-            st.info("No tasks for this date")
+            st.markdown("""
+<div style="background-color:#e7f3fe; color:black; padding:10px; border-left:6px solid #2196F3; border-radius:5px;">
+    ℹ️ No tasks for this date
+</div>
+""", unsafe_allow_html=True)
+
 
     with col2:
         st.header("📝 Task Management")
@@ -226,7 +327,13 @@ def main():
                             st.session_state.assistant.save_data()
                             st.rerun()
             else:
-                st.info("All tasks completed! 🎉")
+                
+                st.markdown("""
+<div style="background-color:#e7f3fe; color:black; padding:10px; border-left:6px solid #2196F3; border-radius:5px;">
+    All tasks completed! 🎉
+</div>
+""", unsafe_allow_html=True)
+
 
         with tab2:
             completed = [t for t in st.session_state.assistant.tasks if t.status == "resolved"]
@@ -244,38 +351,7 @@ def main():
     # Schedule Generator
 st.header("⏳ Schedule Generator")
 
-# Schedule Settings (Expander)
-with st.expander("Schedule Settings"):
-    hours = st.slider("Daily Study Hours", 1, 12, 3)
-    days = st.slider("Planning Horizon (days)", 1, 14, 7)
-
-    if st.button("Generate Schedule"):
-        schedule = st.session_state.assistant.generate_study_schedule(hours, days)
-        
-        if schedule:
-            st.subheader("📅 Your Study Plan")
-            
-            # Loop through schedule dates
-            for date, blocks in schedule.items():
-                st.markdown(f"### 📅 {date}")  # Use header instead of nested expander
-                
-                for block in blocks:
-                    st.markdown(f"""
-                    <div style="padding:10px; margin:5px 0; background:#f9f9f9;
-                                border-left:4px solid #4CAF50; border-radius:4px;">
-                        🕒 <b>{block['time']}</b> ({block['duration']}h)<br>
-                        📌 <b>{block['task']}</b>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-
- # ❓ AI Productivity Assistant (Q&A)
-    st.header("❓ Productivity Assistant")
-    question = st.text_input("Ask a question about your tasks")
-    if question:
-        answer = st.session_state.assistant.ask_question(question)
-        st.markdown(f"**Answer**: {answer}")
-
 
 if __name__ == "__main__":
     main()
+
